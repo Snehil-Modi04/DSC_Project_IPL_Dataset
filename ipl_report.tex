@@ -1,0 +1,358 @@
+% CSE558 Midterm Project Report -- IPL Impact Player study
+% Compile with XeLaTeX (needs the Carlito font, as in the course template):  xelatex ipl_report.tex
+\documentclass[10pt,a4paper]{article}
+\usepackage[a4paper,top=1.6cm,bottom=1.8cm,left=1.7cm,right=1.7cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Carlito}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx,array}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{needspace}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\columnsep}{0.9cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\linespread{1.03}
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{12pt}{5pt}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{3pt}
+\titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\subsubsection}{0pt}{5pt}{2pt}
+\captionsetup{font=small,labelfont=bf,skip=3pt}
+\setlist{nosep,leftmargin=1.2em}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.12}
+\pagestyle{plain}
+
+% compact hypothesis block: H0, H1, alpha, side, test, smallest difference
+\newcommand{\hyp}[6]{%
+\par\smallskip{\small
+\begin{tabularx}{\columnwidth}{@{}>{\bfseries}p{0.40\columnwidth}L@{}}
+\toprule
+$\boldsymbol{H_0}$ & #1\\
+$\boldsymbol{H_1}$ & #2\\
+Significance level & #3\\
+Side & #4\\
+Test & #5\\
+Smallest difference that matters & #6\\
+\bottomrule
+\end{tabularx}}\par}
+% compact result block
+\newcommand{\res}[6]{%
+\par\smallskip{\small
+\begin{tabularx}{\columnwidth}{@{}>{\bfseries}p{0.40\columnwidth}L@{}}
+\toprule
+Estimate & #1\\
+95\% confidence interval & #2\\
+Test statistic (d.f.) & #3\\
+p-value (raw / Holm) & #4\\
+Effect size & #5\\
+Decision & #6\\
+\bottomrule
+\end{tabularx}}\par}
+\newcommand{\figw}[3]{\par\smallskip\noindent\begin{minipage}{\columnwidth}\centering\includegraphics[width=#1\columnwidth]{#2}\captionof{figure}{#3}\end{minipage}\par\smallskip}
+\newcommand{\fig}[2]{\par\smallskip\noindent\begin{minipage}{\columnwidth}\includegraphics[width=\columnwidth]{#1}\captionof{figure}{#2}\end{minipage}\par\smallskip}
+
+\begin{document}
+
+{\small\bfseries CSE558 Data Science \,$\bullet$\, Midterm Project Report \,$\bullet$\, Monsoon 2026}\par\vspace{6pt}
+{\LARGE\bfseries Did the Impact Player rule change the IPL? Evidence from 19 seasons of ball-by-ball data}\par
+\vspace{8pt}\hrule\vspace{6pt}
+
+{\small
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{2.3cm}L@{}}
+Group name & [Group name]\\
+Dataset & \href{https://www.kaggle.com/datasets/abirambharathisa/ipl-ball-by-ball-2008-2026-all-19-seasons}{kaggle.com/datasets/abirambharathisa/ipl-ball-by-ball-2008-2026-all-19-seasons}\\
+Code & [github.com/your-team/cse558-ipl-midterm] (notebook \texttt{ipl\_hypothesis\_tests.ipynb} and README)\\
+\end{tabularx}
+
+\vspace{4pt}
+\begin{tabularx}{\textwidth}{@{}p{0.4cm}p{3.6cm}p{2.2cm}p{4.6cm}L@{}}
+\toprule
+\textbf{\#} & \textbf{Name} & \textbf{Roll no.} & \textbf{Institute email} & \textbf{Contribution}\\
+\midrule
+1 & Snehil Modi & [roll no.] & [email]@iiitd.ac.in & Dataset, size check, preparation (1--3)\\
+2 & [Name] & [roll no.] & [email]@iiitd.ac.in & EDA and problem statements (4)\\
+3 & [Name] & [roll no.] & [email]@iiitd.ac.in & H1, H2 and their robustness checks (5)\\
+4 & [Name] & [roll no.] & [email]@iiitd.ac.in & H3, H4 and their robustness checks (5)\\
+5 & [Name] & [roll no.] & [email]@iiitd.ac.in & H5, robustness summary, limitations, code (5, 6)\\
+\bottomrule
+\end{tabularx}}
+
+\vspace{4pt}
+\begin{multicols}{2}
+\raggedcolumns
+
+\section{Dataset}
+\textbf{Source.} Kaggle, ``IPL Ball-by-Ball 2008--2026: All 19 Seasons'', built from Cricsheet (\href{https://cricsheet.org}{cricsheet.org}) scorecards; downloaded 26 October 2026. Two linked tables: \texttt{ipl\_ball\_by\_ball\_2008\_2026.csv} (one row is one delivery) and \texttt{ipl\_matches\_2008\_2026.csv} (one row is one match: toss, result, method, totals), joined on \texttt{match\_id}. It covers all 1,243 IPL matches from 18 April 2008 to the 2026 final. We checked it against two other public IPL releases: every innings total agrees on all 1,095 and 1,169 shared matches. A fourth Kaggle ``IPL 2008--2025'' file we screened is synthetic (invented player names, wrong champions, $\sim$116 balls per match) and was rejected.
+
+\textbf{What is raw about it.} 11,075 deliveries share a (match, innings, over, ball) key; 175 super-over balls sit beside regulation balls; wicket and extras fields are empty on 94--96\% of rows; DRS-review columns are 99.7\% empty; 60 matches were washed out, tied or shortened.
+
+{\small
+\begin{tabularx}{\columnwidth}{@{}Lrr@{}}
+\toprule
+ & \textbf{Raw file} & \textbf{After encoding}\\
+\midrule
+Instances (rows) & 295,732 & 295,557\\
+Attributes (columns) & 38 & 114\\
+Instances $\times$ attributes & 11,237,816 & 33,693,498\\
+\bottomrule
+\end{tabularx}}
+
+\textbf{Size check.} $295{,}557 \times 114 = 33{,}693{,}498 \geq 3{,}000{,}000$: met with a margin of $\times 11.2$, and the raw ball table alone already gives 11.2M. One-hot encoding of batting and bowling team (15 each), venue (37), phase, extra type and dismissal kind takes the attributes from 38 to 114.
+
+\subsection{Key features}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.45cm}P{1.5cm}L@{}}
+\toprule
+\textbf{Feature} & \textbf{Type} & \textbf{Real-world meaning}\\
+\midrule
+\texttt{total\_runs} & discrete & runs off one delivery (bat + extras)\\
+\texttt{is\_six}, \texttt{is\_wicket} & binary & six hit / batter dismissed on this ball\\
+\texttt{phase} & nominal & Powerplay (overs 1--6), Middle (7--15), Death (16--20)\\
+\texttt{innings} & nominal & 1 = setting a target, 2 = chasing\\
+\texttt{season} & discrete & 2008--2026; 2023+ is the Impact era\\
+\texttt{toss\_winner}, \texttt{toss\_decision} & nominal & who won the toss; chose to bat or field\\
+\texttt{winner} & nominal & match winner; outcome for H3--H5\\
+first-innings total & discrete & derived from the balls; response for H1\\
+\bottomrule
+\end{tabularx}}
+
+\section{Data preparation}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}P{2.3cm}L@{}}
+\toprule
+\textbf{Issue found} & \textbf{What we did} & \textbf{Why, and not the alternative}\\
+\midrule
+11,075 repeated ball keys & kept; new key \texttt{delivery\_\allowbreak in\_\allowbreak over} (0 repeats) & they are wides and no-balls, which are re-bowled with the same ball number; dropping them as duplicates would delete 11,075 real deliveries and their runs\\
+175 super-over balls & removed & a tie-breaker, not part of either side's 20 overs; keeping them inflates totals\\
+\bottomrule
+\end{tabularx}}
+
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}P{2.3cm}L@{}}
+\toprule
+\textbf{Issue found} & \textbf{What we did} & \textbf{Why, and not the alternative}\\
+\midrule
+extras and wicket fields empty (279,505) & filled with \texttt{none} & empty means ``no extra / no wicket'', not unknown (Fig.~\ref{fig:miss}); imputing a value would invent events\\
+chase fields empty (52\%) & left empty, flagged as innings 1 & a first innings has no target; filling one would invent it\\
+DRS columns 99.7\% empty & dropped & DRS began in 2018 and is used on 990 balls in total\\
+\bottomrule
+\end{tabularx}}
+
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}P{2.3cm}L@{}}
+\toprule
+\textbf{Issue found} & \textbf{What we did} & \textbf{Why, and not the alternative}\\
+\midrule
+165 run rates empty & set to 0 & the over began with a wide: 0 legal balls, rate undefined\\
+8 balls with 6 runs, not a six & used the \texttt{is\_six} flag & all-run 6s and overthrows are not sixes\\
+19 ``retired hurt'' as wickets & not counted & the batter was not dismissed\\
+franchise renames & verified one name per franchise (15) & otherwise Delhi Daredevils and Delhi Capitals split one history\\
+60 matches: 9 no result, 16 ties, 23 D/L, 11 reduced, 2 curtailed & left out of score and chase tests & a shortened game is not a like-for-like 20-over contest\\
+25 totals beyond the IQR fences & kept & the record 287 is real and is the effect H1 looks for; capping would erase it\\
+\bottomrule
+\end{tabularx}}
+
+\fig{fig0_missing.pdf}{\label{fig:miss}Empty cells are structural, not lost data: almost every ball has no extra and no wicket, and only second innings have a target.}
+
+\textbf{Unit of analysis.} Balls in one innings share batters, bowlers, pitch and match state, so they are not independent observations. No test runs on balls: H1, H2 and H5 use one first innings per match; H3 and H4 use one match.
+
+\section{What changed after preparation}
+{\small
+\begin{tabularx}{\columnwidth}{@{}Lrr@{}}
+\toprule
+\textbf{Measure} & \textbf{Before} & \textbf{After}\\
+\midrule
+Ball rows & 295,732 & 295,557\\
+Attributes & 38 & 114\\
+Repeated ball keys & 11,075 & 0\\
+Super-over balls & 175 & 0\\
+Empty extras / wicket cells & 279,505 & 0\\
+Innings totals disagreeing with match file & 0 & 0\\
+Matches usable for score tests & 1,243 & 1,183\\
+\bottomrule
+\end{tabularx}}
+
+\textbf{What we gained.} A unique key, zero ambiguous empty cells, and innings totals rebuilt from the balls that match the match file exactly. No value was invented: every step was a recode, a documented flag or a removal. \textbf{What we lost.} Only 175 super-over balls (0.06\%), plus 60 shortened matches (4.8\%) from the score tests.
+
+\section{Basic questions and problem statement}
+\fig{fig1_seasons.pdf}{Season means with 95\% bands. Totals rose from 163 (2008) to 196 (2026), with a visible step after the rule; sixes follow the same path.}
+\fig{fig2_totals.pdf}{First-innings totals, 2018--22 vs 2023--26: the whole distribution shifts right (means 168 and 190).}
+
+\subsection{Basic questions}
+\begin{enumerate}
+\item Which franchise has won the most matches? (Mumbai Indians, 157.)
+\item Do captains prefer to field after winning the toss? (66\% overall, 77\% since 2023.)
+\item Are totals rising over the seasons? (Yes: Spearman $\rho = 0.84$ between season and mean total.)
+\end{enumerate}
+
+\subsection{Our problem statements}
+\noindent\fbox{\parbox{\dimexpr\columnwidth-2\fboxsep-2\fboxrule}{\small
+\textbf{P1 (primary).} Did the Impact Player rule (2023 on), which lets each side bring in a 12th player mid-match, raise scoring beyond the trend that already existed? (H1 totals, H2 sixes)\\[2pt]
+\textbf{P2.} Do the toss and the choice to chase decide matches, and has the chasing edge moved now that targets are higher? (H3, H4)\\[2pt]
+\textbf{P3.} Does losing 3+ wickets in the powerplay sink the batting-first side, and does deeper batting soften that? (H5)}}
+
+\textbf{How they are novel.} The basic questions count wins and totals. Ours treat a rule change as a natural experiment, separate it from a pre-existing trend, and turn ball-level events (sixes, powerplay wickets) into innings-level outcomes that no single row records.
+
+\textbf{Association or cause?} The rule was not randomised, so an era comparison alone cannot isolate it: bats, venues and the 2024 two-bouncer rule changed too. We therefore (i) model the trend and test the jump beyond it, (ii) compare the same venues before and after, (iii) run placebo ``rules'' in years with no rule. A jump that survives all three is strong evidence, but still not proof, of a rule effect.
+
+\section{Statistical inferences}
+\textbf{Rows tested.} Eras: \emph{Pre} = 2018--22 (303 clean matches), \emph{Impact} = 2023--26 (279), \emph{Early} = 2008--17 (601). H1, H2, H4, H5 use the 1,183 full-length matches; H3 uses all 1,218 matches with a winner.
+
+\textbf{Design safeguards.} The five hypotheses, their sides and their real-world thresholds were written down before any outcome in the data was examined, so no hypothesis was chosen to fit a pattern we had seen. Each test is then challenged by the strongest alternative explanation we could think of (trend, venue, innings length, self-selection), and all five p-values carry a Holm correction. Every test reports an effect size, and every null result a power or equivalence analysis (summary in Table~\ref{tab:sum}).
+
+\subsection{H1 (P1): are first-innings totals higher in the Impact era?}
+\subsubsection{a) Hypotheses, written before running the test}
+\hyp{$\mu_I - \mu_P \le 0$}{$\mu_I - \mu_P > 0$}{$\alpha = 0.05$}{one-sided (right)}{Welch t-test}{10 runs}
+$\mu_I, \mu_P$: mean first-innings total, Impact and Pre eras. One-sided because P1 claims a rise. 10 runs is roughly one extra boundary-over; below that, the par score a captain plans for does not change.
+
+\subsubsection{b) Other tests we considered}
+Two independent groups, a continuous response and an unknown $\sigma$ call for a two-sample t-test. We use Welch's version because the spreads differ: the SDs are 35.7 and 29.9, and Levene's test rejects equal variances ($p = 0.002$).
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
+\toprule
+\textbf{Also considered} & \textbf{Why we did or did not use it}\\
+\midrule
+Pooled t-test & assumes equal variances, rejected above; gives $t = 8.18$ (580), same decision\\
+Mann--Whitney / permutation & no normality needed; same decision (HL shift $+22$, 17 to 28; permutation $p < 10^{-4}$)\\
+z-test & needs the population $\sigma$\\
+OLS with trend (+ venue FE) & answers a sharper question, ``beyond the trend?''; run as the robustness check below\\
+\bottomrule
+\end{tabularx}}
+
+\subsubsection{c) Result}
+\res{$+22.3$ runs (190.4 vs 168.1)}{$+16.9$ to $+27.7$}{$t = 8.13$ (544)}{$1.5 \times 10^{-15}$ / $7.6 \times 10^{-15}$}{Cohen's $d = 0.68$}{reject $H_0$}
+The whole interval clears 10 runs, so the rise \textbf{matters}. India-only matches (no UAE seasons): $+20.1$ (14.3 to 25.8).
+
+\textbf{Rule or trend?} Totals were already rising by 0.94 runs a season. Net of that trend the Impact era adds \textbf{+18.1 runs} (11.9 to 24.3; season-clustered SE: 10.6 to 25.6), and comparing the same venues (fixed effects) gives $+19.5$ (12.0 to 27.0). Every lower bound still clears 10 runs. Placebo rules dated 2011--2021 never produce a jump above 7.7 runs (Fig.~\ref{fig:h1}), and the pre-2023 trend forecasts 170--173 for 2023--26 against observed means of 183--196.
+\fig{fig5_h1_trend.pdf}{\label{fig:h1}Left: the pre-2023 trend (line, dashed when projected) badly under-predicts 2023--26 (blue). Right: estimated jump for placebo start years (grey) vs the real 2023 rule (blue), with 95\% CIs; dotted line = 10-run threshold.}
+
+\subsection{H2 (P1): do teams hit more sixes per innings?}
+\subsubsection{a) Hypotheses, written before running the test}
+\hyp{shift $\theta_{I-P} \le 0$}{$\theta_{I-P} > 0$}{$\alpha = 0.05$}{one-sided (right)}{Mann--Whitney U}{1 six per innings}
+$\theta$: location shift in sixes per first innings, Impact minus Pre. Six counts are discrete and right-skewed, so a rank test. One six (6 runs) is the smallest change a viewer or analyst would notice.
+
+\subsubsection{b) Other tests we considered}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
+\toprule
+\textbf{Also considered} & \textbf{Why we did or did not use it}\\
+\midrule
+Poisson rate test & invalid: the variance is $\sim 2\times$ the mean (overdispersion), so its $z = 9.65$ is far too optimistic\\
+Negative binomial regression & handles overdispersion and innings length (offset); run as the robustness check\\
+Welch t on counts & valid at this $n$; $t = 6.80$ (550), same decision; gives the mean difference\\
+\bottomrule
+\end{tabularx}}
+
+\subsubsection{c) Result}
+\res{HL shift $+2$ sixes (median 9 vs 7)}{$+1$ to $+3$ (mean diff.\ $+2.29$: 1.63 to 2.95)}{$U = 54{,}869.5$ ($z = 6.24$)}{$2.2 \times 10^{-10}$ / $6.7 \times 10^{-10}$}{rank-biserial $r = 0.30$}{reject $H_0$}
+The mean difference clears 1 six with room to spare, so the rise \textbf{matters}. Per 120 legal balls the medians are still 9 vs 7. The negative-binomial rate ratio is \textbf{1.33} (1.22 to 1.44): a third more sixes per ball; net of the trend it is 1.18 (1.06 to 1.30, $p = 0.002$). Sixes now supply 29\% of first-innings runs, up from 25\%.
+\fig{fig6_sixes.pdf}{Six counts per first innings: the Impact-era distribution has a heavier right tail; innings with 13+ sixes rose from 8.6\% to 22.2\%.}
+
+\subsection{H3 (P2): does winning the toss help win the match?}
+\subsubsection{a) Hypotheses, written before running the test}
+\hyp{$p_{\text{toss}} \le 0.5$}{$p_{\text{toss}} > 0.5$}{$\alpha = 0.05$}{one-sided (right)}{exact binomial test}{5 percentage points (55\%)}
+$p_{\text{toss}}$: share of matches won by the toss winner; 1,218 matches with a winner (ties and no-results left out).
+
+\subsubsection{b) Other tests we considered}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
+\toprule
+\textbf{Also considered} & \textbf{Why we did or did not use it}\\
+\midrule
+One-proportion z-test & normal approximation to the same test; $z = 1.09$, $p = 0.14$\\
+Chi-square goodness of fit & equivalent but two-sided only ($\chi^2 = 1.19$, 1 d.f.)\\
+TOST equivalence test & answers ``is the effect smaller than 5 pp?'', which a non-rejection cannot; run below\\
+\bottomrule
+\end{tabularx}}
+
+\subsubsection{c) Result}
+\res{51.6\% (628 of 1,218)}{48.7\% to 54.4\%}{exact binomial, $k = 628$, $n = 1{,}218$}{0.14 / 0.29}{$+1.6$ pp; Cohen's $h = 0.03$}{fail to reject $H_0$}
+Not rejecting is not the same as ``no effect'', so we tested equivalence: both one-sided tests reject ($p = 0.009$ against $p \ge 0.55$; $p < 10^{-5}$ against $p \le 0.45$). The toss effect is \textbf{equivalent to zero within $\pm$5 pp}; power to detect a 5 pp edge was 97\%. The \emph{decision} matters instead: toss winners who fielded won 9.4 pp more often than those who batted (3.4 to 15.3; odds ratio 1.48, $p = 0.002$, adjusted for era).
+\fig{fig7_toss.pdf}{Toss winners' win share by era and decision (95\% exact CIs). The overall estimate (diamond) sits inside the $\pm$5 pp band; fielding first is ahead of batting first in every era.}
+
+\subsection{H4 (P2): has the chasing edge changed across eras?}
+\subsubsection{a) Hypotheses, written before running the test}
+\hyp{$p_{E} = p_{P} = p_{I}$}{at least one era differs}{$\alpha = 0.05$}{two-sided (any direction)}{chi-square test of independence ($3 \times 2$)}{10 points between any two eras}
+$p$: share of clean matches won by the chasing side in 2008--17, 2018--22 and 2023--26. Two-sided, because higher targets could make chasing either harder or easier.
+
+\subsubsection{b) Other tests we considered}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
+\toprule
+\textbf{Also considered} & \textbf{Why we did or did not use it}\\
+\midrule
+Pairwise two-proportion z-tests & three tests need a correction and do not test ``any difference''; all Holm $p = 1$\\
+Fisher's exact & meant for sparse tables; the smallest expected count here is 127\\
+G-test & likelihood-ratio version of the same test: $G = 0.44$, same answer\\
+Logistic regression on target and era & asks ``at the same target?'', which the table cannot; run below\\
+\bottomrule
+\end{tabularx}}
+
+\subsubsection{c) Result}
+\res{chase win share 54.4\%, 55.8\%, 53.0\%}{Impact $-$ Pre: $-2.7$ points ($-10.8$ to $+5.4$)}{$\chi^2 = 0.44$ (2)}{0.80 / 0.80}{Cramér's $V = 0.02$}{fail to reject $H_0$}
+Chasing keeps a steady edge of about 4 points over a coin flip. \textbf{Why has it not moved, when targets rose 22 runs?} Each extra 10 runs of target cuts the odds of a successful chase by 30\% (OR 0.70, 0.66 to 0.73). But at the \emph{same} target, Impact-era chasers have about twice the odds (OR 1.97, 1.34 to 2.89, $p < 0.001$): chasing 181 succeeds 63\% of the time now against 47\% before. Better chasing exactly offsets higher targets.
+\fig{fig8_chase_target.pdf}{Chance of a successful chase against the target (logistic fit; dots are binned observed shares, size $\propto n$). The Impact-era curve sits higher at every target, but its mean target (dotted) has moved right.}
+
+\subsection{H5 (P3): does a powerplay collapse sink the batting-first team?}
+\subsubsection{a) Hypotheses, written before running the test}
+\hyp{$p_{C} - p_{N} \ge 0$}{$p_{C} - p_{N} < 0$}{$\alpha = 0.05$}{one-sided (left)}{two-proportion z-test}{15 percentage points}
+$p_C, p_N$: win share of batting-first sides that did / did not lose 3+ wickets in overs 1--6. One first innings per match, so observations are independent.
+
+\subsubsection{b) Other tests we considered}
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
+\toprule
+\textbf{Also considered} & \textbf{Why we did or did not use it}\\
+\midrule
+Chi-square ($2\times2$) & the same test squared, two-sided only ($\chi^2 = 39.8$)\\
+Fisher's exact & unnecessary at $n = 1{,}183$; OR $= 0.32$, $p \approx 8 \times 10^{-11}$\\
+Logistic regression on powerplay wickets & uses the full count, adjusts for venue and trend, and tests an era interaction; run below\\
+\bottomrule
+\end{tabularx}}
+
+\subsubsection{c) Result}
+\res{$-25.8$ points (23.6\% vs 49.4\%)}{$-32.8$ to $-18.8$}{$z = -6.31$}{$1.4 \times 10^{-10}$ / $5.6 \times 10^{-10}$}{odds ratio 0.32}{reject $H_0$}
+\figw{0.86}{fig9_powerplay_era.pdf}{Win share by powerplay wickets before and during the Impact era (95\% CIs). The slopes are parallel: the rule has not changed what an early collapse costs.}
+A collapse halves the batting-first side's chances; the whole interval lies beyond $-15$ points, so it \textbf{matters}. Adjusted for venue and trend, each powerplay wicket multiplies the odds of winning by 0.61 (0.54 to 0.69), through a lower total (187 runs with no early wicket, 151 with three). Deeper batting does \textbf{not} soften it: the wickets $\times$ Impact interaction is OR 1.07 (0.82 to 1.39, $p = 0.62$). Chasing sides pay the same price (25.1\% vs 61.1\%).
+
+\end{multicols}
+\vspace{-2pt}
+\noindent{\large\bfseries All five tests at a glance}\par\vspace{3pt}
+{\small
+\begin{tabularx}{\textwidth}{@{}P{1.9cm}P{3.6cm}P{1.6cm}LP{2.1cm}@{}}
+\toprule
+\textbf{Test} & \textbf{Main estimate (95\% CI)} & \textbf{p (Holm)} & \textbf{Strongest robustness check} & \textbf{Decision}\\
+\midrule
+H1 totals & $+22.3$ runs (16.9, 27.7) & $8 \times 10^{-15}$ & $+18.1$ runs beyond the pre-existing trend (11.9, 24.3); same venues $+19.5$; placebo years never exceed 7.7 & reject; matters\\
+H2 sixes & $+2$ sixes (1, 3) & $7 \times 10^{-10}$ & per ball and net of trend: rate ratio 1.18 (1.06, 1.30) & reject; matters\\
+H3 toss & 51.6\% (48.7, 54.4) & 0.29 & equivalence test: within $\pm$5 pp of 50\% ($p = 0.009$); the bat/field choice matters instead & fail to reject; no effect\\
+H4 chase & 54.4 / 55.8 / 53.0\% & 0.80 & at the same target, Impact-era chasers' odds $\times$1.97 (1.34, 2.89): better chasing offsets higher targets & fail to reject; explained\\
+H5 collapse & $-25.8$ points ($-32.8$, $-18.8$) & $6 \times 10^{-10}$ & venue + trend adjusted OR 0.61 per wicket (0.54, 0.69); no change in the Impact era ($p = 0.62$) & reject; matters\\
+\bottomrule
+\end{tabularx}}
+\captionof{table}{\label{tab:sum}Every decision survives its strongest alternative explanation and the Holm correction. The three rejections clear their real-world thresholds; the two non-rejections are backed by an equivalence test (H3) and a mechanism (H4).}
+\vspace{2pt}
+\begin{multicols}{2}
+\raggedcolumns
+\section{Limitations}
+\begin{itemize}
+\item \textbf{Era, not only rule.} The Impact era also brought the 2024 two-bouncer rule, new squads and bats. Trend adjustment, venue fixed effects and placebo years narrow this down but cannot rule out a change that happened in 2023 for another reason.
+\item \textbf{Not independent within a season.} Matches in one season share conditions; season-clustered errors widen the H1 interval (10.6 to 25.6) but do not change the decision.
+\item \textbf{Venue mix.} 2009 was in South Africa, 2014 began and 2020--21 were partly in the UAE; India-only and venue fixed-effect checks keep H1.
+\item \textbf{Matches left out.} 60 shortened, tied or abandoned matches (4.8\%) are not in the score and chase tests.
+\item \textbf{Self-selection.} Captains choose to bat or field (H3), and collapses are more likely for weaker sides or on harder pitches (H5); these are associations.
+\item \textbf{One league.} Results describe the IPL, not T20 cricket in general; four Impact seasons is still a short run.
+\end{itemize}
+
+\end{multicols}
+\end{document}

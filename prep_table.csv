@@ -1,0 +1,13 @@
+Issue,Count,Action,Why
+"Repeated (match, innings, over, ball) keys",11075,kept; key changed to delivery_in_over (0 repeats),"wides and no-balls are re-bowled with the same ball number; they are real deliveries, not duplicates"
+Super-over balls (innings 3–6),175,removed,"a tie-breaker, not part of either team's 20 overs; would inflate totals"
+extra_type / dismissal fields empty on 94–96% of balls,279505,filled with 'none',"empty means 'no extra' or 'no wicket', not unknown"
+"Chase fields (target, runs_needed, RRR) empty on 52%",153429,left empty; flagged as first innings,there is no target in a first innings; imputing would invent one
+review_by / review_decision 99.7% empty (DRS only from 2018),294742,columns dropped,too sparse and absent before 2018
+current_run_rate empty when an over starts with a wide (0 legal balls),165,set to 0,run rate is undefined at 0 legal balls; 0 is the convention
+Validity: innings totals in ball file vs match file,0,checked (all agree),confirms the two tables are consistent
+6 runs credited but not a six (all-run or overthrow),8,"use the is_six flag, not runs = 6",counting them would overstate sixes
+'Retired hurt' marked as wicket,19,not counted as a wicket,the batter was not dismissed
+"Franchise renames (Delhi Daredevils→Capitals, Kings XI→Punjab Kings, RCB Bangalore→Bengaluru)",15,verified one name per franchise (15 teams),otherwise one team's history splits in two
+No result / tie / D/L / reduced-overs / curtailed matches,9 / 16 / 23 / 11 / 2,left out of score and chase tests,a shortened game is not a like-for-like 20-over contest
+First-innings totals beyond the IQR fences,25,kept,record totals (e.g. 287) are real and are the effect H1 looks for

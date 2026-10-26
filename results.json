@@ -1,0 +1,584 @@
+{
+  "raw": {
+    "balls_rows": 295732,
+    "balls_cols": 38,
+    "balls_cells": 11237816,
+    "match_rows": 1243,
+    "match_cols": 32,
+    "seasons": 19
+  },
+  "encoded": {
+    "rows": 295557,
+    "cols": 114,
+    "cells": 33693498
+  },
+  "before_after": {
+    "Before": {
+      "Ball rows": "295,732",
+      "Ball attributes": "38",
+      "Repeated ball keys": "11,075",
+      "Super-over balls": "175",
+      "Empty extra_type": "279,505",
+      "Review columns": "2",
+      "Matches": "1,243",
+      "Clean full-length matches (score/chase tests)": "\u2014"
+    },
+    "After": {
+      "Ball rows": "295,557",
+      "Ball attributes": "114",
+      "Repeated ball keys": "0 (key: delivery_in_over)",
+      "Super-over balls": "0",
+      "Empty extra_type": "0 ('none')",
+      "Review columns": "0",
+      "Matches": "1,243",
+      "Clean full-length matches (score/chase tests)": "1,183"
+    }
+  },
+  "prep": {
+    "dup_ballkey": 11075,
+    "super_over_balls": 175,
+    "no_result": 9,
+    "ties": 16,
+    "dl": 23,
+    "reduced": 11,
+    "curtailed_first": 28,
+    "clean_matches": 1183,
+    "six_mismatch": 8,
+    "retired_hurt": 19,
+    "iqr_outliers": 25,
+    "max_total": 287,
+    "min_total": 67
+  },
+  "basic": {
+    "most_wins_team": "Mumbai Indians",
+    "most_wins": 157,
+    "field_share": 0.664,
+    "field_share_by_era": {
+      "Early": 0.571,
+      "Impact": 0.771,
+      "Pre": 0.752
+    },
+    "spearman_season_total": 0.84,
+    "p_spearman": 7.293998331953698e-06,
+    "mean_total_2008": 163.2,
+    "mean_total_2026": 196.4
+  },
+  "H1": {
+    "n_impact": 279,
+    "n_pre": 303,
+    "mean_impact": 190.4,
+    "mean_pre": 168.1,
+    "sd_impact": 35.7,
+    "sd_pre": 29.9,
+    "diff": 22.3,
+    "CI": [
+      16.9,
+      27.7
+    ],
+    "t": 8.13,
+    "df": 544.0,
+    "p": 1.5119127798886912e-15,
+    "cohens_d": 0.68,
+    "levene_W": 9.77,
+    "levene_p": 0.0018605633847677823,
+    "pooled_t": 8.18,
+    "pooled_df": 580,
+    "pooled_p": 8.722277088155419e-16,
+    "MW_U": 57964.5,
+    "MW_p": 4.770848331440309e-15,
+    "HL": 22.0,
+    "HL_CI": [
+      17.0,
+      28.0
+    ],
+    "perm_p": 4.999750012499375e-05,
+    "india_n": [
+      279,
+      216
+    ],
+    "india_diff": 20.1,
+    "india_CI": [
+      14.3,
+      25.8
+    ],
+    "india_p": 1.1303357120393414e-11,
+    "skew_impact": -0.08,
+    "skew_pre": -0.29,
+    "trend_jump": 18.1,
+    "trend_jump_CI": [
+      11.9,
+      24.3
+    ],
+    "trend_jump_p": 1.3374355814734996e-08,
+    "trend_slope": 0.94,
+    "cluster_CI": [
+      10.6,
+      25.6
+    ],
+    "cluster_p": 2.413758203664272e-06,
+    "venueFE_jump": 19.5,
+    "venueFE_CI": [
+      12.0,
+      27.0
+    ],
+    "venueFE_p": 3.3931211460470363e-07,
+    "placebo": {
+      "2011": {
+        "jump": -3.7,
+        "lo": -10.3,
+        "hi": 2.9,
+        "p": 0.27549772334349976
+      },
+      "2012": {
+        "jump": -0.4,
+        "lo": -7.0,
+        "hi": 6.1,
+        "p": 0.897223342248934
+      },
+      "2013": {
+        "jump": 1.9,
+        "lo": -4.9,
+        "hi": 8.7,
+        "p": 0.5798723584390548
+      },
+      "2014": {
+        "jump": 7.7,
+        "lo": 0.4,
+        "hi": 15.0,
+        "p": 0.037997339022571464
+      },
+      "2015": {
+        "jump": 7.1,
+        "lo": -0.6,
+        "hi": 14.8,
+        "p": 0.06942636042920346
+      },
+      "2016": {
+        "jump": 3.4,
+        "lo": -4.4,
+        "hi": 11.3,
+        "p": 0.39033833370834925
+      },
+      "2017": {
+        "jump": 3.1,
+        "lo": -4.5,
+        "hi": 10.8,
+        "p": 0.42038314957936795
+      },
+      "2018": {
+        "jump": 1.4,
+        "lo": -6.0,
+        "hi": 8.8,
+        "p": 0.7077924904851962
+      },
+      "2019": {
+        "jump": -3.8,
+        "lo": -10.8,
+        "hi": 3.2,
+        "p": 0.29014283699794974
+      },
+      "2020": {
+        "jump": -4.8,
+        "lo": -11.7,
+        "hi": 2.1,
+        "p": 0.17565919532597274
+      },
+      "2021": {
+        "jump": -6.2,
+        "lo": -13.3,
+        "hi": 1.0,
+        "p": 0.0909688762488637
+      }
+    },
+    "placebo_max_abs": 7.7,
+    "trend_forecast": {
+      "2023": 170.4,
+      "2024": 171.2,
+      "2025": 172.1,
+      "2026": 173.0
+    },
+    "observed_impact_means": {
+      "2023": 183.0,
+      "2024": 190.1,
+      "2025": 192.4,
+      "2026": 196.4
+    }
+  },
+  "H2": {
+    "n_impact": 279,
+    "n_pre": 303,
+    "mean_impact": 9.28,
+    "mean_pre": 6.99,
+    "median_impact": 9.0,
+    "median_pre": 7.0,
+    "U": 54869.5,
+    "p": 2.2473224446655156e-10,
+    "z": 6.24,
+    "HL": 2.0,
+    "HL_CI": [
+      1.0,
+      3.0
+    ],
+    "rank_biserial": 0.3,
+    "welch_t": 6.8,
+    "welch_df": 549.8,
+    "welch_p": 1.3294951707155888e-11,
+    "mean_diff": 2.29,
+    "mean_diff_CI": [
+      1.63,
+      2.95
+    ],
+    "dispersion_var_over_mean": {
+      "Impact": 2.03,
+      "Pre": 1.98
+    },
+    "poisson_z": 9.65,
+    "poisson_p": 2.63196804072591e-23,
+    "rate_median": [
+      9.0,
+      7.0
+    ],
+    "rate_MW_p": 1.1905557309904624e-10,
+    "NB_IRR": 1.33,
+    "NB_IRR_CI": [
+      1.22,
+      1.44
+    ],
+    "NB_alpha": 0.13,
+    "NB_trend_IRR": 1.18,
+    "NB_trend_IRR_CI": [
+      1.06,
+      1.3
+    ],
+    "NB_trend_p": 0.0016434828852933138,
+    "share_runs_from_sixes": {
+      "Pre": 0.249,
+      "Impact": 0.292
+    }
+  },
+  "H3": {
+    "n": 1218,
+    "k": 628,
+    "share": 0.516,
+    "p": 0.14453017852294112,
+    "CI_one_sided_lower": 0.492,
+    "CI_95": [
+      0.487,
+      0.544
+    ],
+    "z": 1.09,
+    "p_z": 0.1381144993103653,
+    "chi2": 1.19,
+    "p_chi2_two_sided": 0.2762289986207285,
+    "by_era": {
+      "Early": {
+        "sum": 322,
+        "count": 626,
+        "mean": 0.514
+      },
+      "Impact": {
+        "sum": 145,
+        "count": 286,
+        "mean": 0.507
+      },
+      "Pre": {
+        "sum": 161,
+        "count": 306,
+        "mean": 0.526
+      }
+    },
+    "by_decision": {
+      "bat": {
+        "sum": 185,
+        "count": 408,
+        "mean": 0.453
+      },
+      "field": {
+        "sum": 443,
+        "count": 810,
+        "mean": 0.547
+      }
+    },
+    "MDE_80pct_power_pp": 3.6,
+    "TOST_p_upper": 0.008638954095169429,
+    "TOST_p_lower": 2.5542609957827054e-06,
+    "TOST_p": 0.008638954095169429,
+    "field_vs_bat_pp": 9.4,
+    "field_vs_bat_CI": [
+      3.4,
+      15.3
+    ],
+    "field_OR": 1.48,
+    "field_OR_CI": [
+      1.16,
+      1.89
+    ],
+    "field_p": 0.0017376906737040813,
+    "era_decision": [
+      {
+        "era": "Early",
+        "toss_decision": "bat",
+        "mean": 0.457,
+        "count": 269
+      },
+      {
+        "era": "Early",
+        "toss_decision": "field",
+        "mean": 0.557,
+        "count": 357
+      },
+      {
+        "era": "Impact",
+        "toss_decision": "bat",
+        "mean": 0.453,
+        "count": 64
+      },
+      {
+        "era": "Impact",
+        "toss_decision": "field",
+        "mean": 0.523,
+        "count": 222
+      },
+      {
+        "era": "Pre",
+        "toss_decision": "bat",
+        "mean": 0.44,
+        "count": 75
+      },
+      {
+        "era": "Pre",
+        "toss_decision": "field",
+        "mean": 0.554,
+        "count": 231
+      }
+    ]
+  },
+  "H4": {
+    "table": {
+      "0": {
+        "Early": 274,
+        "Pre": 134,
+        "Impact": 131
+      },
+      "1": {
+        "Early": 327,
+        "Pre": 169,
+        "Impact": 148
+      }
+    },
+    "n_by_era": {
+      "Early": 601,
+      "Pre": 303,
+      "Impact": 279
+    },
+    "chase_share": {
+      "Early": 0.544,
+      "Pre": 0.558,
+      "Impact": 0.53
+    },
+    "chi2": 0.44,
+    "df": 2,
+    "p": 0.8039100438364469,
+    "cramers_v": 0.019,
+    "G": 0.44,
+    "p_G": 0.8038924336765302,
+    "min_expected": 127.1,
+    "pairwise": {
+      "Pre \u2212 Early": {
+        "diff_pp": 1.4,
+        "CI_pp": [
+          -5.5,
+          8.2
+        ],
+        "p_raw": 0.6967751750410194,
+        "p_holm": 1.0
+      },
+      "Impact \u2212 Pre": {
+        "diff_pp": -2.7,
+        "CI_pp": [
+          -10.8,
+          5.4
+        ],
+        "p_raw": 0.5089717695621789,
+        "p_holm": 1.0
+      },
+      "Impact \u2212 Early": {
+        "diff_pp": -1.4,
+        "CI_pp": [
+          -8.4,
+          5.7
+        ],
+        "p_raw": 0.7058686244924443,
+        "p_holm": 1.0
+      }
+    },
+    "logit_LR_p": 0.8038924002116778,
+    "overall_chase_share": 0.544,
+    "target_by_era": {
+      "Early": 162.0,
+      "Impact": 191.4,
+      "Pre": 169.1
+    },
+    "OR_per10runs": 0.7,
+    "OR_per10runs_CI": [
+      0.66,
+      0.73
+    ],
+    "OR_impact_same_target": 1.97,
+    "OR_impact_CI": [
+      1.34,
+      2.89
+    ],
+    "OR_impact_p": 0.0005820287380764591,
+    "OR_early_same_target": 0.72,
+    "OR_early_p": 0.0356186154413423,
+    "interaction_LR": 1.47,
+    "interaction_p": 0.47891947329841356,
+    "p_win_chasing_181": {
+      "Pre": 0.467,
+      "Impact": 0.633
+    }
+  },
+  "H5": {
+    "n_collapse": 174,
+    "n_no": 1009,
+    "win_collapse": 0.236,
+    "win_no": 0.494,
+    "diff_pp": -25.8,
+    "CI_pp": [
+      -32.8,
+      -18.8
+    ],
+    "z": -6.31,
+    "p": 1.402967504523103e-10,
+    "chi2": 39.81,
+    "p_chi2": 2.8059350090462063e-10,
+    "fisher_OR": 0.32,
+    "p_fisher": 8.221237991995688e-11,
+    "logit_OR_per_wkt": 0.63,
+    "logit_OR_CI": [
+      0.56,
+      0.7
+    ],
+    "logit_p": 5.495656292917023e-15,
+    "win_by_pp_wkts": {
+      "0": {
+        "mean": 0.606,
+        "count": 259
+      },
+      "1": {
+        "mean": 0.491,
+        "count": 446
+      },
+      "2": {
+        "mean": 0.401,
+        "count": 304
+      },
+      "3": {
+        "mean": 0.264,
+        "count": 129
+      },
+      "4": {
+        "mean": 0.158,
+        "count": 38
+      },
+      "5": {
+        "mean": 0.143,
+        "count": 7
+      }
+    },
+    "chase_ext": {
+      "win_collapse": 0.251,
+      "win_no": 0.611,
+      "diff_pp": -36.0,
+      "CI_pp": [
+        -42.5,
+        -29.5
+      ],
+      "z": -9.65,
+      "n_collapse": 219
+    },
+    "adj_OR_per_wkt": 0.61,
+    "adj_OR_CI": [
+      0.54,
+      0.69
+    ],
+    "adj_p": 1.7027317928147035e-15,
+    "interaction_OR": 1.07,
+    "interaction_CI": [
+      0.82,
+      1.39
+    ],
+    "interaction_p": 0.6236807996166895,
+    "collapse_by_era": {
+      "impact=0,collapse=0": {
+        "win": 0.49,
+        "n": 780
+      },
+      "impact=0,collapse=1": {
+        "win": 0.21,
+        "n": 124
+      },
+      "impact=1,collapse=0": {
+        "win": 0.507,
+        "n": 229
+      },
+      "impact=1,collapse=1": {
+        "win": 0.3,
+        "n": 50
+      }
+    },
+    "total_by_pp_wkts": {
+      "0": 187.1,
+      "1": 175.8,
+      "2": 161.2,
+      "3": 150.6,
+      "4": 127.1,
+      "5": 100.4
+    }
+  },
+  "holm_five": {
+    "H1": 7.559563899443456e-15,
+    "H2": 6.741967333996547e-10,
+    "H3": 0.28906035704588223,
+    "H4": 0.8039100438364469,
+    "H5": 5.611870018092412e-10
+  },
+  "summary": [
+    {
+      "test": "H1 totals",
+      "main estimate (95% CI)": "+22.3 runs (16.9, 27.7)",
+      "Holm p": 7.559563899443456e-15,
+      "strongest robustness check": "+18.1 runs beyond the trend (11.9, 24.3); placebo years \u2264 7.7",
+      "decision": "reject"
+    },
+    {
+      "test": "H2 sixes",
+      "main estimate (95% CI)": "HL +2 (1, 3)",
+      "Holm p": 6.741967333996547e-10,
+      "strongest robustness check": "rate ratio 1.18 per ball net of trend (1.06, 1.3)",
+      "decision": "reject"
+    },
+    {
+      "test": "H3 toss",
+      "main estimate (95% CI)": "51.6% (48.7, 54.4)",
+      "Holm p": 0.28906035704588223,
+      "strongest robustness check": "TOST: equivalent to 50% within \u00b15 pp (p = 0.009)",
+      "decision": "fail to reject"
+    },
+    {
+      "test": "H4 chase",
+      "main estimate (95% CI)": "54.4 / 55.8 / 53.0%",
+      "Holm p": 0.8039100438364469,
+      "strongest robustness check": "same target: Impact-era chasers OR 1.97 (1.34, 2.89)",
+      "decision": "fail to reject"
+    },
+    {
+      "test": "H5 collapse",
+      "main estimate (95% CI)": "-25.8 pp (-32.8, -18.8)",
+      "Holm p": 5.611870018092412e-10,
+      "strongest robustness check": "OR 0.61 per wicket, venue + trend adjusted; era interaction p = 0.62",
+      "decision": "reject"
+    }
+  ]
+}
