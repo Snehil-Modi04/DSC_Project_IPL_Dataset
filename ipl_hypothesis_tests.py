@@ -218,6 +218,45 @@ RESULTS["prep"] = {"dup_ballkey": dup_ballkey, "super_over_balls": n_so, "no_res
 before_after
 
 # %% [markdown]
+# ### Box plots: what preparation removed, and why the outliers stay
+# (a) First-innings totals from all 1,243 matches vs the 1,183 full-length matches: the low tail (down to 25 runs) comes from
+# rain-shortened and D/L games, which is why they leave the score tests. (b) The clean totals by era with the IQR fences
+# of the pooled data: the outliers left are real record totals, and they cluster in the Impact era, which is the effect H1 tests.
+
+# %%
+allfi = m["first_innings_runs"].dropna()
+q1b, q3b = fi.quantile([.25, .75]); iqrb = q3b - q1b; lo_f, hi_f = q1b - 1.5 * iqrb, q3b + 1.5 * iqrb
+clean_era = clean.assign(era=clean["season"].map(era_of))
+out_by_era = {e: {"low": int((g["first_innings_runs"] < lo_f).sum()), "high": int((g["first_innings_runs"] > hi_f).sum()), "n": len(g)}
+              for e, g in clean_era.groupby("era")}
+excluded = m[~m["match_id"].isin(clean["match_id"])]["first_innings_runs"].dropna()
+RESULTS["box"] = {"fences": [round(float(lo_f), 2), round(float(hi_f), 2)], "outliers_by_era": out_by_era,
+                  "excluded_median": float(excluded.median()), "excluded_min": float(excluded.min()),
+                  "all_min": float(allfi.min()), "clean_min": float(fi.min()), "clean_median": float(fi.median()), "all_median": float(allfi.median())}
+print(RESULTS["box"])
+bp_kw = dict(widths=0.55, patch_artist=True, medianprops=dict(color=INK, lw=1.2),
+             whiskerprops=dict(color=INK2, lw=0.9), capprops=dict(color=INK2, lw=0.9),
+             flierprops=dict(marker="o", ms=3, mfc=SERIES[1], mec=SERIES[1], alpha=0.8))
+fig, axes = plt.subplots(1, 2, figsize=(3.4, 2.3), gridspec_kw={"width_ratios": [1, 1.4]})
+ax = axes[0]
+b1 = ax.boxplot([allfi.values, fi.values], **bp_kw)
+for patch, c in zip(b1["boxes"], [MUTED, SERIES[0]]): patch.set_facecolor(c); patch.set_alpha(0.55)
+ax.set_xticks([1, 2]); ax.set_xticklabels(["all\n1,243", "full-length\n1,183"]); ax.grid(axis="x", visible=False)
+ax.set_ylabel("first-innings total (runs)"); ax.set_title("(a) before / after")
+ax = axes[1]
+data_e = [clean_era[clean_era["era"] == e]["first_innings_runs"].values for e in ["Early", "Pre", "Impact"]]
+b2 = ax.boxplot(data_e, **bp_kw)
+for patch, c in zip(b2["boxes"], [MUTED, INK2, SERIES[0]]): patch.set_facecolor(c); patch.set_alpha(0.55)
+for yv in (lo_f, hi_f): ax.axhline(yv, color=SERIES[1], lw=0.7, ls=":")
+for i, e in enumerate(["Early", "Pre", "Impact"], start=1):
+    ax.text(i, 300, f"{out_by_era[e]['low'] + out_by_era[e]['high']}", ha="center", fontsize=6, color=SERIES[1])
+ax.set_ylim(0, 315); axes[0].set_ylim(0, 315)
+ax.set_xticks([1, 2, 3]); ax.set_xticklabels(["2008–17", "2018–22", "2023–26"]); ax.grid(axis="x", visible=False)
+ax.set_title("(b) by era; dotted = IQR fences")
+fig.tight_layout()
+save(fig, "fig_box_prep")
+
+# %% [markdown]
 # ## 4. Innings table, EDA and problem statements
 
 # %%
@@ -308,6 +347,14 @@ def two_prop(x1, n1, x2, n2):
     z = (p1 - p2) / np.sqrt(pool * (1 - pool) * (1 / n1 + 1 / n2))
     se = np.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
     return p1, p2, z, (p1 - p2 - 1.96 * se, p1 - p2 + 1.96 * se)
+
+# %% [markdown]
+# ### Why each test, and how the tests link up
+# The primary tests are the standard ones from the course: two-sample t (H1 and H2),
+# one-proportion z (H3), chi-square test of independence (H4) and two-proportion z (H5). The choice follows
+# the response type (continuous, count, binary) and the number of groups. Several of them are the same test in another form,
+# which the cell after H5 checks numerically: with two groups, one-way ANOVA's F equals the pooled t squared; a two-proportion
+# z squared equals the 2×2 chi-square; the one-proportion z squared equals the chi-square goodness-of-fit statistic.
 
 # %% [markdown]
 # ### H1: Are first-innings totals higher in the Impact era?
@@ -419,8 +466,8 @@ save(fig, "fig5_h1_trend")
 
 # %% [markdown]
 # ### H2: Do teams hit more sixes per innings in the Impact era?
-# H0: the Impact-era distribution of sixes per first innings is not shifted up (θ ≤ 0); H1: θ > 0. α = 0.05, one-sided.
-# **Mann–Whitney U** (counts, right-skewed). Smallest difference that matters: **1 six per innings**.
+# H0: μ_Impact − μ_Pre ≤ 0 (mean sixes per first innings); H1: > 0. α = 0.05, one-sided. **Welch t-test**.
+# Smallest difference that matters: **1 six per innings**.
 
 # %%
 x2, y2 = imp["sixes"].values, pre["sixes"].values
@@ -431,10 +478,18 @@ w2 = stats.ttest_ind(x2, y2, equal_var=False, alternative="greater")
 ci2 = stats.ttest_ind(x2, y2, equal_var=False).confidence_interval(0.95)
 disp = {e: round(float(v.var(ddof=1) / v.mean()), 2) for e, v in [("Impact", x2), ("Pre", y2)]}
 pois = stats.poisson_means_test(int(x2.sum()), len(x2), int(y2.sum()), len(y2), alternative="greater")
+lev2 = stats.levene(x2, y2)
+pooled2 = stats.ttest_ind(x2, y2, equal_var=True, alternative="greater")
+sd2 = np.sqrt(((len(x2) - 1) * x2.var(ddof=1) + (len(y2) - 1) * y2.var(ddof=1)) / (len(x2) + len(y2) - 2))
 RESULTS["H2"] = {
     "n_impact": len(x2), "n_pre": len(y2), "mean_impact": round(x2.mean(), 2), "mean_pre": round(y2.mean(), 2),
+    "sd_impact": round(float(x2.std(ddof=1)), 2), "sd_pre": round(float(y2.std(ddof=1)), 2),
     "median_impact": float(np.median(x2)), "median_pre": float(np.median(y2)),
-    "U": float(mw2.statistic), "p": float(mw2.pvalue), "z": round(float(stats.norm.isf(mw2.pvalue)), 2),
+    "p": float(w2.pvalue), "cohens_d": round(float((x2.mean() - y2.mean()) / sd2), 2),
+    "skew_impact": round(float(stats.skew(x2)), 2), "skew_pre": round(float(stats.skew(y2)), 2),
+    "levene_W": round(float(lev2.statistic), 2), "levene_p": float(lev2.pvalue),
+    "pooled_t": round(float(pooled2.statistic), 2), "pooled_p": float(pooled2.pvalue),
+    "U": float(mw2.statistic), "MW_p": float(mw2.pvalue), "MW_z": round(float(stats.norm.isf(mw2.pvalue)), 2),
     "HL": round(hl2[0], 1), "HL_CI": [round(hl2[1], 1), round(hl2[2], 1)], "rank_biserial": round(float(rbc), 2),
     "welch_t": round(float(w2.statistic), 2), "welch_df": round(float(w2.df), 1), "welch_p": float(w2.pvalue),
     "mean_diff": round(float(x2.mean() - y2.mean()), 2), "mean_diff_CI": [round(float(ci2.low), 2), round(float(ci2.high), 2)],
@@ -443,12 +498,14 @@ RESULTS["H2"] = {
 for k, v in RESULTS["H2"].items(): print(f"{k:>24}: {v}")
 
 # %% [markdown]
-# **b) Other tests.** Six counts are discrete and right-skewed, so a rank test. Poisson rate test: invalid, the variance is
-# about twice the mean (overdispersion), which makes its p-value far too small. Welch t on counts: valid at this n, same decision.
+# **b) Other tests.** Two independent groups and an unknown σ → two-sample t-test on the mean. Counts are mildly
+# right-skewed, but with ~280 and ~300 innings per group the CLT makes the sample means close to normal. Welch's version
+# because the spreads differ. Mann–Whitney: the rank-based check, same decision. Pooled t: same decision.
+# Poisson rate test: invalid, the variance is about twice the mean (overdispersion), so its p-value is far too small.
 #
-# **c) Result.** Median sixes per first innings **9 vs 7**; Hodges–Lehmann shift **+2** (95% CI +1 to +3); U = 54,869.5,
-# z = 6.24, p ≈ 2×10⁻¹⁰, rank-biserial r = 0.30. Reject H0. Mean difference +2.29 (1.63 to 2.95), whose CI clears 1 six,
-# so it **matters**; the HL lower bound sits exactly at 1.
+# **c) Result.** Mean sixes per first innings **9.28 vs 6.99**: **+2.29** (95% CI 1.63 to 2.95); Welch t = 6.80
+# (550 d.f.), p ≈ 1.3×10⁻¹¹. Reject H0; the whole CI clears 1 six, so it **matters**. Mann–Whitney agrees
+# (median 9 vs 7, HL shift +2, p ≈ 2×10⁻¹⁰).
 
 # %% [markdown]
 # **H2, deeper.** Longer innings give more chances to hit sixes, so we also test the rate per 120 legal balls, and fit a
@@ -492,44 +549,47 @@ save(fig, "fig6_sixes")
 
 # %% [markdown]
 # ### H3: Does winning the toss help win the match?
-# H0: P(toss winner wins) ≤ 0.5; H1: > 0.5. α = 0.05, one-sided. **Exact binomial test** on every match with a result
+# H0: P(toss winner wins) ≤ 0.5; H1: > 0.5. α = 0.05, one-sided. **One-proportion z-test** on every match with a result
 # (ties and no-results excluded). Smallest difference that matters: **5 percentage points** (55%).
 
 # %%
 dec = m[m["result"].eq("Normal") & m["winner"].notna()].copy()
 dec["toss_won_match"] = (dec["toss_winner"] == dec["winner"]).astype(int)
 k3, n3 = int(dec["toss_won_match"].sum()), len(dec)
-bt = stats.binomtest(k3, n3, 0.5, alternative="greater")
-ci3 = bt.proportion_ci(confidence_level=0.95, method="exact")
-ci3_two = stats.binomtest(k3, n3, 0.5).proportion_ci(confidence_level=0.95, method="exact")
-z3 = (k3 / n3 - 0.5) / np.sqrt(0.25 / n3)
+phat3 = k3 / n3
+z3 = (phat3 - 0.5) / np.sqrt(0.5 * 0.5 / n3)                 # SE under H0 for the statistic
+p3 = stats.norm.sf(z3)                                         # one-sided (right)
+se3 = np.sqrt(phat3 * (1 - phat3) / n3)                        # SE from the sample for the interval
+ci3_two = (phat3 - 1.96 * se3, phat3 + 1.96 * se3)
+bt = stats.binomtest(k3, n3, 0.5, alternative="greater")       # exact binomial: alternative test
 chi3 = stats.chisquare([k3, n3 - k3])
 by_era3 = dec.groupby("era")["toss_won_match"].agg(["sum", "count", "mean"]).round(3)
 by_dec3 = dec.groupby("toss_decision")["toss_won_match"].agg(["sum", "count", "mean"]).round(3)
 mde3 = (stats.norm.ppf(0.95) + stats.norm.ppf(0.8)) * 0.5 / np.sqrt(n3)
-RESULTS["H3"] = {"n": n3, "k": k3, "share": round(k3 / n3, 3), "p": float(bt.pvalue),
-                 "CI_one_sided_lower": round(float(ci3.low), 3), "CI_95": [round(float(ci3_two.low), 3), round(float(ci3_two.high), 3)],
-                 "z": round(float(z3), 2), "p_z": float(stats.norm.sf(z3)), "chi2": round(float(chi3.statistic), 2), "p_chi2_two_sided": float(chi3.pvalue),
+RESULTS["H3"] = {"n": n3, "k": k3, "share": round(k3 / n3, 3), "p": float(p3),
+                 "CI_95": [round(float(ci3_two[0]), 3), round(float(ci3_two[1]), 3)],
+                 "z": round(float(z3), 2), "p_exact_binomial": float(bt.pvalue), "chi2": round(float(chi3.statistic), 2), "p_chi2_two_sided": float(chi3.pvalue),
                  "by_era": by_era3.to_dict(orient="index"), "by_decision": by_dec3.to_dict(orient="index"),
                  "MDE_80pct_power_pp": round(float(mde3 * 100), 1)}
 for k, v in RESULTS["H3"].items(): print(f"{k:>20}: {v}")
 
 # %% [markdown]
-# **b) Other tests.** One binary outcome per match against a fixed 50% → exact binomial. z-test for one proportion
-# (normal approximation, fine at n = 1,218): z = 1.09, p = 0.14. Chi-square goodness-of-fit: equivalent but two-sided only.
+# **b) Other tests.** One binary outcome per match against a fixed 50%, and np = n(1−p) = 609 ≥ 10, so the normal
+# approximation holds → one-proportion z-test. Exact binomial test: exact at any n but unnecessary here; p = 0.14, same decision.
+# Chi-square goodness-of-fit: equivalent (χ² = z² = 1.19) but two-sided only.
 #
-# **c) Result.** Toss winners won **628 of 1,218 (51.6%)**, 95% CI 48.7% to 54.4%, p = 0.14: **fail to reject H0**. The CI
+# **c) Result.** Toss winners won **628 of 1,218 (51.6%)**, 95% CI 48.8% to 54.4%, z = 1.09, p = 0.14: **fail to reject H0**. The CI
 # upper bound is below 55%, so the data **rule out** the 5 pp edge we said would matter (power to detect it ≈ 97%; MDE at 80% power 3.6 pp).
 # What matters is the choice, not the coin: toss winners who chose to field won 54.7%, those who batted 45.3%.
 
 # %% [markdown]
 # **H3, deeper.** Failing to reject is not proof of no effect, so we run an **equivalence test (TOST)** against the ±5 pp
-# margin: two one-sided binomial tests, H0: p ≥ 0.55 and H0: p ≤ 0.45. Rejecting both shows the toss effect lies inside
+# margin: two one-sided z-tests, H0: p ≥ 0.55 and H0: p ≤ 0.45. Rejecting both shows the toss effect lies inside
 # the margin. A logistic regression then separates the coin (who wins it) from the decision (bat or field).
 
 # %%
-tost_hi = stats.binomtest(k3, n3, 0.55, alternative="less").pvalue
-tost_lo = stats.binomtest(k3, n3, 0.45, alternative="greater").pvalue
+tost_hi = stats.norm.cdf((phat3 - 0.55) / np.sqrt(0.55 * 0.45 / n3))     # H0: p >= 0.55
+tost_lo = stats.norm.sf((phat3 - 0.45) / np.sqrt(0.45 * 0.55 / n3))      # H0: p <= 0.45
 l3 = smf.logit("toss_won_match ~ C(toss_decision) + C(era)", dec).fit(disp=0)
 p_fd, p_bd = by_dec3.loc["field", "mean"], by_dec3.loc["bat", "mean"]
 _, _, z_dec, ci_dec = two_prop(by_dec3.loc["field", "sum"], by_dec3.loc["field", "count"], by_dec3.loc["bat", "sum"], by_dec3.loc["bat", "count"])
@@ -561,7 +621,7 @@ ax.set_title("Toss winners' win share (band: ±5 pp margin)")
 save(fig, "fig7_toss")
 
 # %% [markdown]
-# **Reading.** TOST rejects both p ≥ 0.55 (p = 0.009) and p ≤ 0.45 (p < 10⁻⁵): the toss effect is **equivalent to zero
+# **Reading.** TOST rejects both p ≥ 0.55 (p = 0.008) and p ≤ 0.45 (p < 10⁻⁵): the toss effect is **equivalent to zero
 # within ±5 pp**. The decision matters: fielding first wins 9.4 pp more often than batting first (3.4 to 15.3), odds ratio 1.48.
 
 # %% [markdown]
@@ -751,6 +811,17 @@ save(fig, "fig9_powerplay_era")
 # The Impact-era interaction is OR 1.07 (0.82 to 1.39, p = 0.62): no evidence that batting deeper softens a collapse.
 
 # %%
+# Links between the tests: the same evidence in different forms
+anova1 = stats.f_oneway(imp["runs"], pre["runs"])
+RESULTS["links"] = {
+    "H1_pooled_t_sq": round(RESULTS["H1"]["pooled_t"] ** 2, 1), "H1_anova_F": round(float(anova1.statistic), 1), "H1_anova_p": float(anova1.pvalue),
+    "H3_z_sq": round(RESULTS["H3"]["z"] ** 2, 2), "H3_chi2_gof": RESULTS["H3"]["chi2"],
+    "H5_z_sq": round(RESULTS["H5"]["z"] ** 2, 1), "H5_chi2": RESULTS["H5"]["chi2"],
+    "H4_chi2": RESULTS["H4"]["chi2"], "H4_G": RESULTS["H4"]["G"],
+}
+print(RESULTS["links"])
+
+# %%
 # Robustness across the five tests: Holm adjustment of the five primary p-values
 prim = {"H1": RESULTS["H1"]["p"], "H2": RESULTS["H2"]["p"], "H3": RESULTS["H3"]["p"], "H4": RESULTS["H4"]["p"], "H5": RESULTS["H5"]["p"]}
 RESULTS["holm_five"] = dict(zip(prim, [float(v) for v in multipletests(list(prim.values()), method="holm")[1]]))
@@ -765,7 +836,7 @@ print(RESULTS["holm_five"])
 summary = pd.DataFrame([
     ["H1 totals", f"+{RESULTS['H1']['diff']} runs ({RESULTS['H1']['CI'][0]}, {RESULTS['H1']['CI'][1]})", RESULTS["holm_five"]["H1"],
      f"+{RESULTS['H1']['trend_jump']} runs beyond the trend ({RESULTS['H1']['trend_jump_CI'][0]}, {RESULTS['H1']['trend_jump_CI'][1]}); placebo years ≤ {RESULTS['H1']['placebo_max_abs']}", "reject"],
-    ["H2 sixes", f"HL +{RESULTS['H2']['HL']:.0f} ({RESULTS['H2']['HL_CI'][0]:.0f}, {RESULTS['H2']['HL_CI'][1]:.0f})", RESULTS["holm_five"]["H2"],
+    ["H2 sixes", f"+{RESULTS['H2']['mean_diff']} sixes ({RESULTS['H2']['mean_diff_CI'][0]}, {RESULTS['H2']['mean_diff_CI'][1]})", RESULTS["holm_five"]["H2"],
      f"rate ratio {RESULTS['H2']['NB_trend_IRR']} per ball net of trend ({RESULTS['H2']['NB_trend_IRR_CI'][0]}, {RESULTS['H2']['NB_trend_IRR_CI'][1]})", "reject"],
     ["H3 toss", f"{RESULTS['H3']['share']*100:.1f}% ({RESULTS['H3']['CI_95'][0]*100:.1f}, {RESULTS['H3']['CI_95'][1]*100:.1f})", RESULTS["holm_five"]["H3"],
      f"TOST: equivalent to 50% within ±5 pp (p = {RESULTS['H3']['TOST_p']:.3f})", "fail to reject"],

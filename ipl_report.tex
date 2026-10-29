@@ -69,21 +69,21 @@ Decision & #6\\
 
 {\small
 \begin{tabularx}{\textwidth}{@{}>{\bfseries}p{2.3cm}L@{}}
-Group name & [Group name]\\
+Group name & Null and Void\\
 Dataset & \href{https://www.kaggle.com/datasets/abirambharathisa/ipl-ball-by-ball-2008-2026-all-19-seasons}{kaggle.com/datasets/abirambharathisa/ipl-ball-by-ball-2008-2026-all-19-seasons}\\
-Code & [github.com/your-team/cse558-ipl-midterm] (notebook \texttt{ipl\_hypothesis\_tests.ipynb} and README)\\
+Code & \href{https://github.com/Snehil-Modi04/DSC_Project_IPL_Dataset}{github.com/Snehil-Modi04/DSC\_Project\_IPL\_Dataset} (notebook \texttt{ipl\_hypothesis\_tests.ipynb} and README)\\
 \end{tabularx}
 
 \vspace{4pt}
-\begin{tabularx}{\textwidth}{@{}p{0.4cm}p{3.6cm}p{2.2cm}p{4.6cm}L@{}}
+\begin{tabularx}{\textwidth}{@{}p{0.3cm}p{2.6cm}p{1.5cm}p{4.0cm}L@{}}
 \toprule
 \textbf{\#} & \textbf{Name} & \textbf{Roll no.} & \textbf{Institute email} & \textbf{Contribution}\\
 \midrule
-1 & Snehil Modi & [roll no.] & [email]@iiitd.ac.in & Dataset, size check, preparation (1--3)\\
-2 & [Name] & [roll no.] & [email]@iiitd.ac.in & EDA and problem statements (4)\\
-3 & [Name] & [roll no.] & [email]@iiitd.ac.in & H1, H2 and their robustness checks (5)\\
-4 & [Name] & [roll no.] & [email]@iiitd.ac.in & H3, H4 and their robustness checks (5)\\
-5 & [Name] & [roll no.] & [email]@iiitd.ac.in & H5, robustness summary, limitations, code (5, 6)\\
+1 & Snehil Modi & 2024558 & snehil24558@iiitd.ac.in & Dataset collection, EDA, plot analysis, problem statements, report, code\\
+2 & Vasu Mehta & 2024610 & vasu24610@iiitd.ac.in & Plot analysis, problem statements, H1, H2, report, code\\
+3 & Ishaan Dhull & 2024267 & ishaan24267@iiitd.ac.in & Problem statements, H3, code\\
+4 & Harshita Garg & 2024251 & harshita24251@iiitd.ac.in & H4, robustness summary, code\\
+5 & Ishika Dhama & 2024270 & ishika24270@iiitd.ac.in & H5, limitations, code\\
 \bottomrule
 \end{tabularx}}
 
@@ -184,6 +184,9 @@ Matches usable for score tests & 1,243 & 1,183\\
 
 \textbf{What we gained.} A unique key, zero ambiguous empty cells, and innings totals rebuilt from the balls that match the match file exactly. No value was invented: every step was a recode, a documented flag or a removal. \textbf{What we lost.} Only 175 super-over balls (0.06\%), plus 60 shortened matches (4.8\%) from the score tests.
 
+\fig{fig_box_prep.pdf}{\label{fig:box}(a) First-innings totals before and after removing shortened matches: the lowest totals (down to 25) were rain-affected games. (b) Clean totals by era; dotted lines are the pooled IQR fences, numbers count totals beyond them.}
+\textbf{What the box plots show.} (a) The 60 shortened matches have a median first-innings total of 150 against 168 for full-length games, and they hold the lowest score in the file (25). Leaving them in would drag the 20-over comparisons down with games that were never 20 overs long, so they leave the score and chase tests. (b) After that, 25 totals still lie beyond the IQR fences (86.8 and 252.8 runs). We keep them: they are real scores (the 287 is a record), and 13 of the 14 high ones come from 2023--26. Capping them would remove exactly the change H1 tests. The Impact-era box sits higher with a similar spread, which is why H1 compares means with Welch's t-test.
+
 \section{Basic questions and problem statement}
 \fig{fig1_seasons.pdf}{Season means with 95\% bands. Totals rose from 163 (2008) to 196 (2026), with a visible step after the rule; sixes follow the same path.}
 \fig{fig2_totals.pdf}{First-innings totals, 2018--22 vs 2023--26: the whole distribution shifts right (means 168 and 190).}
@@ -209,6 +212,22 @@ Matches usable for score tests & 1,243 & 1,183\\
 \textbf{Rows tested.} Eras: \emph{Pre} = 2018--22 (303 clean matches), \emph{Impact} = 2023--26 (279), \emph{Early} = 2008--17 (601). H1, H2, H4, H5 use the 1,183 full-length matches; H3 uses all 1,218 matches with a winner.
 
 \textbf{Design safeguards.} The five hypotheses, their sides and their real-world thresholds were written down before any outcome in the data was examined, so no hypothesis was chosen to fit a pattern we had seen. Each test is then challenged by the strongest alternative explanation we could think of (trend, venue, innings length, self-selection), and all five p-values carry a Holm correction. Every test reports an effect size, and every null result a power or equivalence analysis (summary in Table~\ref{tab:sum}).
+
+\textbf{Why these tests.} Every primary test is a standard test from the course, chosen by the type of response and the number of groups. The regressions and the equivalence test appear only as robustness checks.
+{\small
+\begin{tabularx}{\columnwidth}{@{}P{0.5cm}P{1.75cm}P{1.65cm}L@{}}
+\toprule
+\textbf{H} & \textbf{Data} & \textbf{Test} & \textbf{Why this one}\\
+\midrule
+H1 & continuous; 2 independent groups & Welch two-sample t & $\sigma$ unknown and spreads unequal (Levene); with 2 groups it is one-way ANOVA ($F = t^2$)\\
+H2 & counts, mildly skewed; 2 groups & Welch two-sample t & mean of $\sim$290 innings per group is near-normal (CLT); spreads unequal (Levene)\\
+H3 & binary; 1 group vs 50\% & one-proportion z & one proportion against a fixed value, $np = 609 \ge 10$ so the normal approximation holds; same as $\chi^2$ goodness of fit\\
+H4 & binary; 3 groups & $\chi^2$ independence & more than 2 groups, so a z-test cannot compare them at once\\
+H5 & binary; 2 groups & two-proportion z & one-sided $H_1$; the $2\times2$ $\chi^2$ is only two-sided\\
+\bottomrule
+\end{tabularx}}
+
+\textbf{How the chi-square and the other tests link.} Several tests are the same evidence in different forms, and the numbers confirm it. H1: one-way ANOVA gives $F(1, 580) = 67.0$, the square of the pooled $t = 8.18$. H3: $z^2 = 1.09^2 = 1.19$, exactly the $\chi^2$ goodness-of-fit statistic. H5: $z^2 = (-6.31)^2 = 39.8$, exactly the $2\times2$ $\chi^2$, and Fisher's exact test agrees. H4: the likelihood-ratio $G = 0.44$ matches $\chi^2 = 0.44$. So where we prefer z or t over $\chi^2$, it is for the one-sided alternative and the signed estimate, not because the tests disagree.
 
 \subsection{H1 (P1): are first-innings totals higher in the Impact era?}
 \subsubsection{a) Hypotheses, written before running the test}
@@ -238,29 +257,31 @@ The whole interval clears 10 runs, so the rise \textbf{matters}. India-only matc
 
 \subsection{H2 (P1): do teams hit more sixes per innings?}
 \subsubsection{a) Hypotheses, written before running the test}
-\hyp{shift $\theta_{I-P} \le 0$}{$\theta_{I-P} > 0$}{$\alpha = 0.05$}{one-sided (right)}{Mann--Whitney U}{1 six per innings}
-$\theta$: location shift in sixes per first innings, Impact minus Pre. Six counts are discrete and right-skewed, so a rank test. One six (6 runs) is the smallest change a viewer or analyst would notice.
+\hyp{$\mu_I - \mu_P \le 0$}{$\mu_I - \mu_P > 0$}{$\alpha = 0.05$}{one-sided (right)}{Welch t-test}{1 six per innings}
+$\mu_I, \mu_P$: mean sixes per first innings, Impact and Pre eras. One-sided because P1 claims a rise. One six (6 runs) is the smallest change a viewer or analyst would notice.
 
 \subsubsection{b) Other tests we considered}
+Two independent groups and an unknown $\sigma$ call for a two-sample t-test. Six counts are discrete and mildly right-skewed (skew 0.41 and 0.48), but with 279 and 303 innings the sample means are close to normal by the central limit theorem. We use Welch's version because the spreads differ (SDs 4.34 and 3.72; Levene $p = 0.008$).
 {\small
 \begin{tabularx}{\columnwidth}{@{}P{2.3cm}L@{}}
 \toprule
 \textbf{Also considered} & \textbf{Why we did or did not use it}\\
 \midrule
+Pooled t-test & assumes equal variances, rejected above; $t = 6.85$, same decision\\
+Mann--Whitney U & rank-based, no normality needed; run as the check: median 9 vs 7, HL shift $+2$ (1 to 3), $p = 2 \times 10^{-10}$, same decision\\
 Poisson rate test & invalid: the variance is $\sim 2\times$ the mean (overdispersion), so its $z = 9.65$ is far too optimistic\\
 Negative binomial regression & handles overdispersion and innings length (offset); run as the robustness check\\
-Welch t on counts & valid at this $n$; $t = 6.80$ (550), same decision; gives the mean difference\\
 \bottomrule
 \end{tabularx}}
 
 \subsubsection{c) Result}
-\res{HL shift $+2$ sixes (median 9 vs 7)}{$+1$ to $+3$ (mean diff.\ $+2.29$: 1.63 to 2.95)}{$U = 54{,}869.5$ ($z = 6.24$)}{$2.2 \times 10^{-10}$ / $6.7 \times 10^{-10}$}{rank-biserial $r = 0.30$}{reject $H_0$}
-The mean difference clears 1 six with room to spare, so the rise \textbf{matters}. Per 120 legal balls the medians are still 9 vs 7. The negative-binomial rate ratio is \textbf{1.33} (1.22 to 1.44): a third more sixes per ball; net of the trend it is 1.18 (1.06 to 1.30, $p = 0.002$). Sixes now supply 29\% of first-innings runs, up from 25\%.
+\res{$+2.29$ sixes (9.28 vs 6.99)}{$+1.63$ to $+2.95$}{$t = 6.80$ (550)}{$1.3 \times 10^{-11}$ / $5.3 \times 10^{-11}$}{Cohen's $d = 0.57$}{reject $H_0$}
+The whole interval clears 1 six, so the rise \textbf{matters}. Per 120 legal balls the medians are still 9 vs 7. The negative-binomial rate ratio is \textbf{1.33} (1.22 to 1.44): a third more sixes per ball; net of the trend it is 1.18 (1.06 to 1.30, $p = 0.002$). Sixes now supply 29\% of first-innings runs, up from 25\%.
 \fig{fig6_sixes.pdf}{Six counts per first innings: the Impact-era distribution has a heavier right tail; innings with 13+ sixes rose from 8.6\% to 22.2\%.}
 
 \subsection{H3 (P2): does winning the toss help win the match?}
 \subsubsection{a) Hypotheses, written before running the test}
-\hyp{$p_{\text{toss}} \le 0.5$}{$p_{\text{toss}} > 0.5$}{$\alpha = 0.05$}{one-sided (right)}{exact binomial test}{5 percentage points (55\%)}
+\hyp{$p_{\text{toss}} \le 0.5$}{$p_{\text{toss}} > 0.5$}{$\alpha = 0.05$}{one-sided (right)}{one-proportion z-test}{5 percentage points (55\%)}
 $p_{\text{toss}}$: share of matches won by the toss winner; 1,218 matches with a winner (ties and no-results left out).
 
 \subsubsection{b) Other tests we considered}
@@ -269,15 +290,15 @@ $p_{\text{toss}}$: share of matches won by the toss winner; 1,218 matches with a
 \toprule
 \textbf{Also considered} & \textbf{Why we did or did not use it}\\
 \midrule
-One-proportion z-test & normal approximation to the same test; $z = 1.09$, $p = 0.14$\\
+Exact binomial test & exact at any sample size, but unnecessary when $np = 609$; $p = 0.14$, same decision\\
 Chi-square goodness of fit & equivalent but two-sided only ($\chi^2 = 1.19$, 1 d.f.)\\
 TOST equivalence test & answers ``is the effect smaller than 5 pp?'', which a non-rejection cannot; run below\\
 \bottomrule
 \end{tabularx}}
 
 \subsubsection{c) Result}
-\res{51.6\% (628 of 1,218)}{48.7\% to 54.4\%}{exact binomial, $k = 628$, $n = 1{,}218$}{0.14 / 0.29}{$+1.6$ pp; Cohen's $h = 0.03$}{fail to reject $H_0$}
-Not rejecting is not the same as ``no effect'', so we tested equivalence: both one-sided tests reject ($p = 0.009$ against $p \ge 0.55$; $p < 10^{-5}$ against $p \le 0.45$). The toss effect is \textbf{equivalent to zero within $\pm$5 pp}; power to detect a 5 pp edge was 97\%. The \emph{decision} matters instead: toss winners who fielded won 9.4 pp more often than those who batted (3.4 to 15.3; odds ratio 1.48, $p = 0.002$, adjusted for era).
+\res{51.6\% (628 of 1,218)}{48.8\% to 54.4\%}{$z = 1.09$}{0.14 / 0.28}{$+1.6$ pp; Cohen's $h = 0.03$}{fail to reject $H_0$}
+Not rejecting is not the same as ``no effect'', so we tested equivalence: both one-sided z-tests reject ($p = 0.008$ against $p \ge 0.55$; $p < 10^{-5}$ against $p \le 0.45$). The toss effect is \textbf{equivalent to zero within $\pm$5 pp}; power to detect a 5 pp edge was 97\%. The \emph{decision} matters instead: toss winners who fielded won 9.4 pp more often than those who batted (3.4 to 15.3; odds ratio 1.48, $p = 0.002$, adjusted for era).
 \fig{fig7_toss.pdf}{Toss winners' win share by era and decision (95\% exact CIs). The overall estimate (diamond) sits inside the $\pm$5 pp band; fielding first is ahead of batting first in every era.}
 
 \subsection{H4 (P2): has the chasing edge changed across eras?}
@@ -321,26 +342,28 @@ Logistic regression on powerplay wickets & uses the full count, adjusts for venu
 \end{tabularx}}
 
 \subsubsection{c) Result}
-\res{$-25.8$ points (23.6\% vs 49.4\%)}{$-32.8$ to $-18.8$}{$z = -6.31$}{$1.4 \times 10^{-10}$ / $5.6 \times 10^{-10}$}{odds ratio 0.32}{reject $H_0$}
+\res{$-25.8$ points (23.6\% vs 49.4\%)}{$-32.8$ to $-18.8$}{$z = -6.31$}{$1.4 \times 10^{-10}$ / $4.2 \times 10^{-10}$}{odds ratio 0.32}{reject $H_0$}
 \figw{0.86}{fig9_powerplay_era.pdf}{Win share by powerplay wickets before and during the Impact era (95\% CIs). The slopes are parallel: the rule has not changed what an early collapse costs.}
 A collapse halves the batting-first side's chances; the whole interval lies beyond $-15$ points, so it \textbf{matters}. Adjusted for venue and trend, each powerplay wicket multiplies the odds of winning by 0.61 (0.54 to 0.69), through a lower total (187 runs with no early wicket, 151 with three). Deeper batting does \textbf{not} soften it: the wickets $\times$ Impact interaction is OR 1.07 (0.82 to 1.39, $p = 0.62$). Chasing sides pay the same price (25.1\% vs 61.1\%).
 
 \end{multicols}
 \vspace{-2pt}
-\noindent{\large\bfseries All five tests at a glance}\par\vspace{3pt}
+\noindent\begin{minipage}{\textwidth}
+{\large\bfseries All five tests at a glance}\par\vspace{3pt}
 {\small
 \begin{tabularx}{\textwidth}{@{}P{1.9cm}P{3.6cm}P{1.6cm}LP{2.1cm}@{}}
 \toprule
 \textbf{Test} & \textbf{Main estimate (95\% CI)} & \textbf{p (Holm)} & \textbf{Strongest robustness check} & \textbf{Decision}\\
 \midrule
 H1 totals & $+22.3$ runs (16.9, 27.7) & $8 \times 10^{-15}$ & $+18.1$ runs beyond the pre-existing trend (11.9, 24.3); same venues $+19.5$; placebo years never exceed 7.7 & reject; matters\\
-H2 sixes & $+2$ sixes (1, 3) & $7 \times 10^{-10}$ & per ball and net of trend: rate ratio 1.18 (1.06, 1.30) & reject; matters\\
-H3 toss & 51.6\% (48.7, 54.4) & 0.29 & equivalence test: within $\pm$5 pp of 50\% ($p = 0.009$); the bat/field choice matters instead & fail to reject; no effect\\
+H2 sixes & $+2.29$ sixes (1.63, 2.95) & $5 \times 10^{-11}$ & per ball and net of trend: rate ratio 1.18 (1.06, 1.30) & reject; matters\\
+H3 toss & 51.6\% (48.8, 54.4) & 0.28 & equivalence test: within $\pm$5 pp of 50\% ($p = 0.008$); the bat/field choice matters instead & fail to reject; no effect\\
 H4 chase & 54.4 / 55.8 / 53.0\% & 0.80 & at the same target, Impact-era chasers' odds $\times$1.97 (1.34, 2.89): better chasing offsets higher targets & fail to reject; explained\\
-H5 collapse & $-25.8$ points ($-32.8$, $-18.8$) & $6 \times 10^{-10}$ & venue + trend adjusted OR 0.61 per wicket (0.54, 0.69); no change in the Impact era ($p = 0.62$) & reject; matters\\
+H5 collapse & $-25.8$ points ($-32.8$, $-18.8$) & $4 \times 10^{-10}$ & venue + trend adjusted OR 0.61 per wicket (0.54, 0.69); no change in the Impact era ($p = 0.62$) & reject; matters\\
 \bottomrule
 \end{tabularx}}
 \captionof{table}{\label{tab:sum}Every decision survives its strongest alternative explanation and the Holm correction. The three rejections clear their real-world thresholds; the two non-rejections are backed by an equivalence test (H3) and a mechanism (H4).}
+\end{minipage}
 \vspace{2pt}
 \begin{multicols}{2}
 \raggedcolumns

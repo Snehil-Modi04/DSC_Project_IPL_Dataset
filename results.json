@@ -49,6 +49,35 @@
     "max_total": 287,
     "min_total": 67
   },
+  "box": {
+    "fences": [
+      86.75,
+      252.75
+    ],
+    "outliers_by_era": {
+      "Early": {
+        "low": 7,
+        "high": 1,
+        "n": 601
+      },
+      "Impact": {
+        "low": 1,
+        "high": 13,
+        "n": 279
+      },
+      "Pre": {
+        "low": 3,
+        "high": 0,
+        "n": 303
+      }
+    },
+    "excluded_median": 150.0,
+    "excluded_min": 25.0,
+    "all_min": 25.0,
+    "clean_min": 67.0,
+    "clean_median": 168.0,
+    "all_median": 168.0
+  },
   "basic": {
     "most_wins_team": "Mumbai Indians",
     "most_wins": 157,
@@ -209,11 +238,21 @@
     "n_pre": 303,
     "mean_impact": 9.28,
     "mean_pre": 6.99,
+    "sd_impact": 4.34,
+    "sd_pre": 3.72,
     "median_impact": 9.0,
     "median_pre": 7.0,
+    "p": 1.3294951707155888e-11,
+    "cohens_d": 0.57,
+    "skew_impact": 0.48,
+    "skew_pre": 0.41,
+    "levene_W": 7.15,
+    "levene_p": 0.007727974318118255,
+    "pooled_t": 6.85,
+    "pooled_p": 9.60090640784111e-12,
     "U": 54869.5,
-    "p": 2.2473224446655156e-10,
-    "z": 6.24,
+    "MW_p": 2.2473224446655156e-10,
+    "MW_z": 6.24,
     "HL": 2.0,
     "HL_CI": [
       1.0,
@@ -260,14 +299,13 @@
     "n": 1218,
     "k": 628,
     "share": 0.516,
-    "p": 0.14453017852294112,
-    "CI_one_sided_lower": 0.492,
+    "p": 0.1381144993103653,
     "CI_95": [
-      0.487,
+      0.488,
       0.544
     ],
     "z": 1.09,
-    "p_z": 0.1381144993103653,
+    "p_exact_binomial": 0.14453017852294112,
     "chi2": 1.19,
     "p_chi2_two_sided": 0.2762289986207285,
     "by_era": {
@@ -300,9 +338,9 @@
       }
     },
     "MDE_80pct_power_pp": 3.6,
-    "TOST_p_upper": 0.008638954095169429,
-    "TOST_p_lower": 2.5542609957827054e-06,
-    "TOST_p": 0.008638954095169429,
+    "TOST_p_upper": 0.007905429502688034,
+    "TOST_p_lower": 2.0934461345532895e-06,
+    "TOST_p": 0.007905429502688034,
     "field_vs_bat_pp": 9.4,
     "field_vs_bat_CI": [
       3.4,
@@ -503,7 +541,7 @@
       0.54,
       0.69
     ],
-    "adj_p": 1.7027317928147035e-15,
+    "adj_p": 1.7027317928146912e-15,
     "interaction_OR": 1.07,
     "interaction_CI": [
       0.82,
@@ -537,12 +575,23 @@
       "5": 100.4
     }
   },
+  "links": {
+    "H1_pooled_t_sq": 66.9,
+    "H1_anova_F": 67.0,
+    "H1_anova_p": 1.7444554176310838e-15,
+    "H3_z_sq": 1.19,
+    "H3_chi2_gof": 1.19,
+    "H5_z_sq": 39.8,
+    "H5_chi2": 39.81,
+    "H4_chi2": 0.44,
+    "H4_G": 0.44
+  },
   "holm_five": {
     "H1": 7.559563899443456e-15,
-    "H2": 6.741967333996547e-10,
-    "H3": 0.28906035704588223,
+    "H2": 5.3179806828623553e-11,
+    "H3": 0.2762289986207306,
     "H4": 0.8039100438364469,
-    "H5": 5.611870018092412e-10
+    "H5": 4.2089025135693087e-10
   },
   "summary": [
     {
@@ -554,16 +603,16 @@
     },
     {
       "test": "H2 sixes",
-      "main estimate (95% CI)": "HL +2 (1, 3)",
-      "Holm p": 6.741967333996547e-10,
+      "main estimate (95% CI)": "+2.29 sixes (1.63, 2.95)",
+      "Holm p": 5.3179806828623553e-11,
       "strongest robustness check": "rate ratio 1.18 per ball net of trend (1.06, 1.3)",
       "decision": "reject"
     },
     {
       "test": "H3 toss",
-      "main estimate (95% CI)": "51.6% (48.7, 54.4)",
-      "Holm p": 0.28906035704588223,
-      "strongest robustness check": "TOST: equivalent to 50% within \u00b15 pp (p = 0.009)",
+      "main estimate (95% CI)": "51.6% (48.8, 54.4)",
+      "Holm p": 0.2762289986207306,
+      "strongest robustness check": "TOST: equivalent to 50% within \u00b15 pp (p = 0.008)",
       "decision": "fail to reject"
     },
     {
@@ -576,7 +625,7 @@
     {
       "test": "H5 collapse",
       "main estimate (95% CI)": "-25.8 pp (-32.8, -18.8)",
-      "Holm p": 5.611870018092412e-10,
+      "Holm p": 4.2089025135693087e-10,
       "strongest robustness check": "OR 0.61 per wicket, venue + trend adjusted; era interaction p = 0.62",
       "decision": "reject"
     }

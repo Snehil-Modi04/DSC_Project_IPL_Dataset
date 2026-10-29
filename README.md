@@ -1,12 +1,14 @@
 # CSE558 Midterm Project: Did the Impact Player rule change the IPL?
 
+Group: **Null and Void** (Snehil Modi, Vasu Mehta, Ishaan Dhull, Harshita Garg, Ishika Dhama). Repository: https://github.com/Snehil-Modi04/DSC_Project_IPL_Dataset
+
 This project runs five hypothesis tests on 19 seasons of IPL ball-by-ball data (2008–2026). The data covers 1,243 matches and 295,732 deliveries.
 
 | # | Question | Test | Result (α = 0.05) |
 |---|---|---|---|
 | H1 | Are first-innings totals higher in the Impact era (2023–26) than in 2018–22? | Welch t-test | +22.3 runs (95% CI 16.9 to 27.7), p ≈ 1.5×10⁻¹⁵: reject H₀ |
-| H2 | Do teams hit more sixes per first innings? | Mann–Whitney U | +2 sixes (CI 1 to 3), p ≈ 2×10⁻¹⁰: reject H₀ |
-| H3 | Does the toss winner win more than half of matches? | Exact binomial test | 51.6% (CI 48.7 to 54.4), p = 0.14: fail to reject H₀ |
+| H2 | Do teams hit more sixes per first innings? | Welch t-test | +2.29 sixes (CI 1.63 to 2.95), p ≈ 1.3×10⁻¹¹: reject H₀ |
+| H3 | Does the toss winner win more than half of matches? | One-proportion z-test | 51.6% (CI 48.8 to 54.4), p = 0.14: fail to reject H₀ |
 | H4 | Has the chasing side's win share changed across three eras? | Chi-square test, 3×2 | 54.4% / 55.8% / 53.0%, p = 0.80: fail to reject H₀ |
 | H5 | Does losing 3 or more powerplay wickets lower the batting-first team's win share? | Two-proportion z-test | 23.6% vs 49.4% (−25.8 pp), p ≈ 1.4×10⁻¹⁰: reject H₀ |
 
@@ -39,7 +41,7 @@ To rebuild the report, run `cd report && xelatex ipl_report.tex`. This needs the
 | `figures/` | All figures, as PDF and PNG |
 | `outputs/results.json` | Every number quoted in the report |
 | `outputs/prep_table.csv`, `outputs/before_after.csv` | Tables for report sections 2 and 3 |
-| `report/ipl_report.tex`, `report/ipl_report.pdf` | The report in the course template layout (6 pages, 9 figures) |
+| `report/ipl_report.tex`, `report/ipl_report.pdf` | The report in the course template layout (7 pages, 10 figures) |
 
 ## Method in brief
 
@@ -72,7 +74,7 @@ The five hypotheses, their sides and their thresholds were written down before a
   - India-only matches.
 - **H2:** the six rate per 120 balls, and a negative-binomial regression with an offset. The rate ratio is 1.33, and 1.18 net of the trend.
 - **H3:**
-  - TOST equivalence test: the toss effect lies within ±5 pp, p = 0.009.
+  - TOST equivalence test: the toss effect lies within ±5 pp, p = 0.008.
   - Choosing to field first versus bat first: +9.4 pp, odds ratio 1.48.
 - **H4:** logistic regression on target and era. At the same target, Impact-era chasers have about twice the odds of winning (OR 1.97), which offsets the higher targets.
 - **H5:**
